@@ -6,6 +6,7 @@ on:
       tag:
         description: "The tag of the release"
         required: true
+        type: string
     secrets:
       MAVEN_CENTRAL_USER:
         required: true
