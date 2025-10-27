@@ -1,4 +1,4 @@
-name: Publish package to the Maven Central Repository
+name: Publish package to Maven Central
 
 on:
   workflow_call:
@@ -17,9 +17,14 @@ on:
       OSSRH_GPG_PASSPHRASE:
         required: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
 
@@ -34,11 +39,19 @@ jobs:
           gpg-private-key: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
-      - name: Get POM version
-        run: echo "POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-
-      - name: Make sure that the versions match
-        run: '[[ "v$POM_VERSION" == "${{ inputs.tag }}" ]] && exit 0 || exit 1'
+      - name: Verify version matches tag
+        run: |
+          POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          EXPECTED_TAG="v$POM_VERSION"
+          ACTUAL_TAG="${{ inputs.tag }}"
+          
+          if [[ "$EXPECTED_TAG" != "$ACTUAL_TAG" ]]; then
+            echo "Error: Version mismatch!"
+            echo "Expected tag: $EXPECTED_TAG (from pom.xml)"
+            echo "Actual tag: $ACTUAL_TAG"
+            exit 1
+          fi
+          echo "✓ Version $POM_VERSION matches tag $ACTUAL_TAG"
 
       - name: Publish package to maven central
         run: mvn --batch-mode clean compile javadoc:javadoc deploy -P release
@@ -54,8 +67,8 @@ jobs:
           clean: false
           folder: target/site/apidocs
           branch: javadoc
-          target-folder: ${{ env.TAG_VERSION }}
-          
+          target-folder: ${{ inputs.tag }}
+
       - name: Deploy JavaDoc to GitHub Pages - Latest
         uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8
         with:
