@@ -1,0 +1,26 @@
+name: Java CI with Maven
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Make sure that the API can compile
+        run: mvn compile
+
+      - name: Download latest alda checkstyle
+        run: curl https://raw.githubusercontent.com/FontysVenlo/alda_checkstyle/main/alda_checks.xml -o alda_checks.xml
+
+      - name: Check JavaDoc
+        run: mvn checkstyle:check -Dcheckstyle.config.location=alda_checks.xml
