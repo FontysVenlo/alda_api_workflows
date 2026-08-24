@@ -62,7 +62,7 @@ jobs:
           MAVEN_OPTS: "--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
 
       - name: Deploy JavaDoc to GitHub Pages - Versioned
-        uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445
         with:
           clean: false
           folder: target/site/apidocs
@@ -70,7 +70,7 @@ jobs:
           target-folder: ${{ inputs.tag }}
 
       - name: Deploy JavaDoc to GitHub Pages - Latest
-        uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445
         with:
           clean: true
           folder: target/site/apidocs
