@@ -61,11 +61,20 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_PASSPHRASE }}
           MAVEN_OPTS: "--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
 
+      # maven-javadoc-plugin 3.7+ writes to target/reports/apidocs, older versions to target/site/apidocs
+      - name: Locate JavaDoc
+        run: |
+          if [[ -d target/reports/apidocs ]]; then
+            echo "JAVADOC_DIR=target/reports/apidocs" >> "$GITHUB_ENV"
+          else
+            echo "JAVADOC_DIR=target/site/apidocs" >> "$GITHUB_ENV"
+          fi
+
       - name: Deploy JavaDoc to GitHub Pages - Versioned
         uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445
         with:
           clean: false
-          folder: target/site/apidocs
+          folder: ${{ env.JAVADOC_DIR }}
           branch: javadoc
           target-folder: ${{ inputs.tag }}
 
@@ -73,7 +82,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445
         with:
           clean: true
-          folder: target/site/apidocs
+          folder: ${{ env.JAVADOC_DIR }}
           branch: javadoc
           target-folder: latest
           force: true
